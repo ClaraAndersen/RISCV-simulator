@@ -6,8 +6,11 @@ import java.io.IOException;
 
 public class BinaryToHex {
 	public static void main(String[] args) {
+		// Check files in branch.
+		// File file = new File("./src/addlarge.bin");
+		// for(String fileNames : file.list()) System.out.println(fileNames);
 		StringBuilder sb = new StringBuilder();
-		File f = new File("addlarge.bin");
+		File f = new File("./src/addlarge.bin");
 		try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(f))) {
 			for (int b; (b = is.read()) != -1;) {
 				/** 
