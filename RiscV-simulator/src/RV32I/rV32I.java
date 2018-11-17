@@ -38,10 +38,10 @@ public class rV32I {
 			case 0x17: //AUIPC -Add upper immediate to PC
 				reg[rd] = (imm << 12) + pc;
 				break;
-//			case 0x6F: //JAL -Jump and link
+//		case 0x6F: //JAL -Jump and link
 //				reg[rd] = (imm << 12) + pc;
 //				break;
-			/case 0x13: // ADDI
+			case 0x13: // ADDI
 			//	reg[rd] = reg[rs1] + imm;
 			//	break;
 			default:
