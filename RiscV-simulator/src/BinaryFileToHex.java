@@ -3,11 +3,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class BinaryFileToHex
-{
+public class BinaryFileToHex {
 	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	public static void main(String[] args) throws IOException
-	{
+	public static void main(String[] args) throws IOException {
 		Path path = Paths.get("./src/addlarge.bin");
 		byte[] data = Files.readAllBytes(path);
 		System.out.println(bytesToHex(data));
