@@ -136,20 +136,93 @@ public class rv32I2 {
 					break;
 					
 				case 0x5:
-					switch(imm7) {
+					switch(funct7) {
 						case 0x0: //SRLI -Shift right logical, immediate 
 							reg[rd]= reg[res1] >> res2;
 							break;
 						case 0x20: //SRAI -Shift right arithmetic immediate
-							//We save the sign bit
-							reg[rd]= (reg[res1] >> res2)+();
+							//We save the sign bit res2 corresponds to shamt
+							if((res2 >> 4) ==1) { //we have a negative number
+								if(((reg[res1] >> res2) >> 31)==0) {
+									reg[rd]= (reg[res1] >> res2)+(80000000); //should set the sign bit to 1 
+								}
+								else {
+									reg[rd]= (reg[res1] >> res2); 
+								}
+							}
+							else {//we have a positve number
+								if(((reg[res1] >> res2) >> 31)==1) {
+									reg[rd]= (reg[res1] >> res2)+(80000000); //should set the sign bit to 0 (with overflow)
+								}
+								else {
+									reg[rd]= (reg[res1] >> res2);
+								}
+							}
+							
 							break;
 					}
 				break;
-					
-					
-					
 				}
+				
+			case 0x33:
+				switch(funct3) {
+				case 0x0:
+					switch(funct7) {
+					case 0x0: //add
+						reg[rd]=reg[res1]+reg[res2];
+						break;
+					case 0x20: //sub
+						reg[rd]=reg[res1]-reg[2];
+						break;
+					}
+				case 0x1: //SLL- Shift left logical
+					reg[rd]=reg[res1]<<(reg[res2] & 0x1F); //because it is only by the amount in the lower 5 bit
+					break;
+				case 0x2: //SLT -Set less than
+					if(reg[res1]<reg[res2]) {
+						reg[rd]=1;
+					}
+					else {
+						reg[rd]=0;
+					}
+					break;
+				//case 0x3: //SLTU -Set less than unsigned ?????
+				case 0x4: //XOR -exclusive or
+					reg[rd]=reg[res1]^reg[res2];
+					break;
+				case 0x5:
+					switch(funct7) {
+					case 0x0://SRL -Shift right logical
+					reg[rd]=reg[res1]>>(reg[res1]& 0x1F);
+					break;
+					case 0x20://SRA -Shift right arithmetic
+						if((reg[res1] & 80000000)==1) { //negative number
+							if((reg[res1]>>(reg[res1]& 0x1F)>>31)==0) {
+								reg[rd]= (reg[res1] >> res2)+(80000000);//set bit sign to 1
+							}
+							else {
+								reg[rd]= (reg[res1] >> res2);
+							}
+						}
+						else {//positive
+							if((reg[res1]>>(reg[res1]& 0x1F))==1) {//negative
+								reg[rd]= (reg[res1] >> res2)+(80000000);//set bit sign to 0
+							}
+							else {
+								reg[rd]= (reg[res1] >> res2);
+							}	
+						}
+						}
+				case 0x6: //OR
+					reg[rd]=reg[res1]|reg[res2];
+					break;
+				case 0x7://AND
+					reg[rd]=reg[res1]&reg[res2];
+					}
+					break;
+			case 0x73://ECALL
+				
+				
 				
 			default:
 				System.out.println("Opcode " + opcode + " not yet implemented");
