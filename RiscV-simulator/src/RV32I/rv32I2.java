@@ -42,128 +42,87 @@ public class rv32I2 {
 				reg[rd] = (imm20 << 12) + pc;
 				break;
 
-			case 0x13: //format type I
-				
+			case 0x13:
 				switch (funct3) {
 				
 				case 0x0: //ADDI- Add immediate
 					reg[rd]=reg[res1] + imm12;
+					//TEST: do imm12 need to be sign extended before addition???
+					
 				case 0x2: // SLTI - Set less than immediate
 					if(reg[res1]< imm12) {
 						reg[rd]=1;
 					}
 					else {
 						reg[rd]=0;
-					};
+					}
 					break;
 					
 				case 0x3: //SLTIU -set less than immediate unsigned 
-					if((imm12 >> 11) ==1) {
-						if(reg[res1]< 0xFFFFF000 + imm12){ 
-							//what does it mean to do an unsigned comparison.
-							reg[rd]=1;}
+					if((imm12 >> 11) ==1) { //negative case
+						if(reg[res1]< (0xFFFFF000 + imm12)){ //comparison with sign extension
+							reg[rd]=1;
+						}
 						else {
 							reg[rd]=0;
 						}
 					}
-					else {
-						if(reg[res1]< imm12) {
-							reg[rd]=1;}
+					else { //positive case
+						if(reg[res1]< imm12) {//nothing need to be done for sign extension, since sign bit is 0.
+							reg[rd]=1;
+						}
 						else {
 							reg[rd]=0;
 						}
-					};
+					}
 					break;
 					
 				case 0x4: //XORI - Exclusive or immediate
-					if((imm12 >> 11) ==1) {
-						if((reg[res1] >> 4) ==1) {
-							reg[rd]=(0xFFFFF000 + imm12)^(0xFFFFFFE0 + reg[res1]);
-						}
-						else {
-							reg[rd]=(0xFFFFF000 + imm12)^(reg[res1]);
-						}
+					if((imm12 >> 11) ==1) { //negative immediate 
+						reg[rd]=(0xFFFFF000 + imm12)^(reg[res1]);
 					}
-					else {
-						if((reg[res1] >> 4) ==1) {
-							reg[rd]=(imm12)^(0xFFFFFFE0 + reg[res1]);
-						}
-						else {
-							reg[rd]=(imm12)^(reg[res1]);
-						}
-					};
-					break;
+					else { //positive immediate
+							reg[rd]=(imm12)^(reg[res1]); //nothing is done to sign extend
+					}					
+				
+				break;
 					
 				case 0x6: //ORI -or, immediate
-					if((imm12 >> 11) ==1) {
-						if((reg[res1] >> 4) ==1) {
-							reg[rd]=(0xFFFFF000 + imm12)|(0xFFFFFFE0 + reg[res1]);
-						}
-						else {
-							reg[rd]=(0xFFFFF000 + imm12)|(reg[res1]);
-						}
+					if((imm12 >> 11) ==1) { //negative immediate
+						reg[rd]=(0xFFFFF000 + imm12)|(reg[res1]);
 					}
 					else {
-						if((res1 >> 4) ==1) {
-							reg[rd]=(imm12)|(0xFFFFFFE0 + reg[res1]);
-						}
-						else {
-							reg[rd]=(imm12)|(reg[res1]);
-						}
-					};
+						reg[rd]=(imm12)|(reg[res1]);
+					}
 					break;
 					
-				case 7: //ANDI- bitwise and, immediate
-					if((imm12 >> 11) ==1) {
-						if((reg[res1] >> 4) ==1) {
-							reg[rd]=(0xFFFFF000 + imm12)&(0xFFFFFFE0 + reg[res1]);
-						}
-						else {
-							reg[rd]=(0xFFFFF000 + imm12)&(reg[res1]);
-						}
+				case 0x7: //ANDI- bitwise and, immediate
+					if((imm12 >> 11) ==1) {//negative case
+							reg[rd]=(0xFFFFF000 + imm12) & reg[res1];
 					}
-					else {
-						if((reg[res1] >> 4) ==1) {
-							reg[rd]=(imm12)&(0xFFFFFFE0 + reg[res1]);
-						}
-						else {
+					else {//positive case
 							reg[rd]=(imm12)&(reg[res1]);
-						}
-					};
+					}
 					break;
+					
 				case 0x1: //SLLI -Shift left logical, immediate 
-					reg[rd]= reg[res1] << res2;
-					break;
+					reg[rd]= reg[res1] << res2; //we refer to res2 here, as it is equivalent to the 5 lower bits in the immediate field in the I-format.
+					break; //there might be a problem here with <<
 					
 				case 0x5:
 					switch(funct7) {
+					
 						case 0x0: //SRLI -Shift right logical, immediate 
-							reg[rd]= reg[res1] >> res2;
+							reg[rd]= reg[res1] >>> res2;
 							break;
-						case 0x20: //SRAI -Shift right arithmetic immediate
-							//We save the sign bit res2 corresponds to shamt
-							if((res2 >> 4) ==1) { //we have a negative number
-								if(((reg[res1] >> res2) >> 31)==0) {
-									reg[rd]= (reg[res1] >> res2)+(80000000); //should set the sign bit to 1 
-								}
-								else {
-									reg[rd]= (reg[res1] >> res2); 
-								}
-							}
-							else {//we have a positve number
-								if(((reg[res1] >> res2) >> 31)==1) {
-									reg[rd]= (reg[res1] >> res2)+(80000000); //should set the sign bit to 0 (with overflow)
-								}
-								else {
-									reg[rd]= (reg[res1] >> res2);
-								}
-							}
 							
+						case 0x20: //SRAI -Shift right arithmetic immediate
+							reg[rd] = reg[res1] >> res2;
+							//>> shift the sign bit in >>> shift in 0 regardless
 							break;
 					}
-				break;
+					break;
 				}
-				
 			case 0x33:
 				switch(funct3) {
 				case 0x0:
@@ -220,9 +179,32 @@ public class rv32I2 {
 					reg[rd]=reg[res1]&reg[res2];
 					}
 					break;
+					
 			case 0x73://ECALL
-				
-				
+				if(reg[0x1010]==1) {//print int in a0(x10)
+					System.out.print(reg[0x1011]);
+				}
+				else if(reg[0x1010]==4){//print string in a0(x10)
+					System.out.print(reg[0x1011]);
+				}
+				else if(reg[0x1010]==9) {//allocates a1 bytes on the heap, returns pointer to start in a0
+					
+				}
+				else if(reg[0x1010]==10) {//exit programm
+					System.exit(1);
+				}
+				else if(reg[0x1010]==11) { //prints ASCII character in a1
+					System.out.print(reg[0x1011]);
+				}
+				else if(reg[0x1010]==17) { //ends the program with return code in a1
+					System.out.print(reg[0x1011]);
+					System.exit(1);
+				}
+				else {//not recognized ID in a0
+					System.out.print("The ID stored in a0 is not valid when ecall");
+				}
+				break;
+			
 				
 			default:
 				System.out.println("Opcode " + opcode + " not yet implemented");

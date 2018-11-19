@@ -64,3 +64,21 @@ public class rV32I {
 	}
 
 }
+
+
+////*if((res2 >> 4) ==1) { //we have a negative number
+//	if(((reg[res1] >> res2) >> 31)==0) {
+//		reg[rd]= (reg[res1] >> res2)+(80000000); //should set the sign bit to 1 
+//	}
+//	else {
+//		reg[rd]= (reg[res1] >> res2); 
+//	}
+//}
+//else {//we have a positve number
+//	if(((reg[res1] >> res2) >> 31)==1) {
+//		reg[rd]= (reg[res1] >> res2)+(80000000); //should set the sign bit to 0 (with overflow)
+//	}
+//	else {
+//		reg[rd]= (reg[res1] >> res2);
+//	}
+//}
