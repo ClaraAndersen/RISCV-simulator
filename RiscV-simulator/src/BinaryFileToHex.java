@@ -1,47 +1,23 @@
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Array;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
 
 
 public class BinaryFileToHex {
 	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	private String[] words;
-	private int i;
-	//	public static void main(String[] args) throws IOException {
-	//		Path path = Paths.get("./src/addlarge.bin");
-	//		byte[] data = Files.readAllBytes(path);
-	//		System.out.println(bytesToHex(data));
 
-
-	// Reads the binary file containing the instruction set into a byte array.
-	// Maybe not fully useful.
+	// Method that reads the binary file containing the instruction 
+	// set into a byte array.
 	public byte[] readByteArray() throws IOException{
 		Path path = Paths.get("./src/test_addi.bin");
 		byte[] data = Files.readAllBytes(path);
 		return data;
-//		List<byte[]> listOfByte = Arrays.asList(data);	
-//		Collections.reverse(listOfByte);
-//		
-//		byte[] result = listOfByte.stream().collect(
-//				() -> new ByteArrayOutputStream(),
-//				(b, e) -> {
-//					try {
-//						b.write(e);
-//					} catch (IOException e1) {
-//						throw new RuntimeException(e1);
-//					}
-//				},
-//				(a, b) -> {}).toByteArray();
-//		return result;
 	}
-	// Reverse
+	// Method that reverses the order of the byte array.
+	// Because we want to prepare for converting from little edian to big edian 
 	public byte[] reverse(byte[] array) {
 	      int i = 0;
 	      int j = array.length - 1;
@@ -56,20 +32,18 @@ public class BinaryFileToHex {
 		return array;
 	  }
 
-	// Converts the byte array into a Hex - string.
+	// Method that converts the byte array into a Hex - string.
 	public String bytesToHex(byte[] bytes) {
-		
 		char[] hexChars = new char[bytes.length * 2];
 		for ( int j = 0; j < bytes.length; j++ ) {
 			int v = bytes[j] & 0xFF;
 			hexChars[j * 2] = hexArray[v >>> 4];
 			hexChars[j * 2 + 1] = hexArray[v & 0x0F];
 		}
-//		String newString = new StringBuilder(new String(hexChars)).reverse().toString();
 		return new String(hexChars);
 	}	
 
-	// Returns the Hex with 0x in the start.
+	// Method that returns the Hex with 0x in the start.
 	public String ConvertedByteToHex() throws IOException {
 		String myString = bytesToHex(reverse(readByteArray()));
 //		String newString = "0x" + myString.replaceAll("(.{8})(?!$)", "$1 0x");
@@ -77,23 +51,24 @@ public class BinaryFileToHex {
 		return newString;
 	}
 
-	// Return hex in a String array where we can access the indices with " HexArray()[1] "
+	// Return hex in a String array where we can access the indices with " HexArray()[1]"
+	// and reverse the order of the elements in the string array.
 	public String[] HexArray() throws IOException {
 		String line = ConvertedByteToHex();
 		Pattern pattern = Pattern.compile(" ");
-		words = pattern.split(line);
-		return words;
-	
-	}
-	
-	public String[] reverseString(String[] words) {
-		String[] t = new String[words.length];
-		for (String wordTemp : words) {
-			StringBuilder sb = new StringBuilder(wordTemp);
-			t[i] = sb.reverse().toString();   
+		String [] words = pattern.split(line);
+		Arrays.toString(words);
+		for(int i = 0; i < words.length/2; i++) {
+			String temp = words[i];
+			words[i] = words[words.length - i - 1];
+			words[words.length - i - 1] = temp;
 		}
-		return t;
+		return words;
 	}
+	
+	
+	
+
 }
 
 
