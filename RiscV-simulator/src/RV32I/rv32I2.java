@@ -13,7 +13,7 @@ public class rv32I2 {
 	};
 	
 	//The simulation
-	public static void main(String[] args) {
+	public static void main(String[] args) { 
 
 		pc = 0;
 
