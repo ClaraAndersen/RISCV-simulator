@@ -8,11 +8,18 @@ public class Main extends BinaryFileToHex{
 
 		// Testing 
 		BinaryFileToHex binaryFile = new  BinaryFileToHex();
-		System.out.println("Original Array : "+Arrays.toString(binaryFile.HexArray()));
-		System.out.println("Flipped bytes  : "+binaryFile.ConvertedByteToHex());
-		String test = binaryFile.HexArray()[4];
+		
+		System.out.println("Original Array : "+Arrays.toString(BinaryFileToHex.HexArray()));
+		System.out.println("Flipped bytes  : "+BinaryFileToHex.ConvertedByteToHex());
+		int[] test = binaryFile.tester();
 		System.out.println("Hex as index   : "+test);
-		//		
-
+		
+//		if (0xF9C38E13 > Math.pow(2, 32) * 0.5 - 1){
+//			System.out.println("True");
+//		} 
+//		else {
+//			System.out.println("False");
+//		}
+		
 	}
 }
