@@ -45,6 +45,8 @@ public class IsaSim {
 			switch (opcode) {
 
 			case 0x13:
+				swithc(rd){case 7:}
+				
 				reg[rd] = reg[rs1] + imm;
 				break;
 			default:
