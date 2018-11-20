@@ -1,5 +1,3 @@
-import java.io.IOException;
-
 /**
  * RISC-V Instruction Set Simulator
  * 
@@ -9,26 +7,23 @@ import java.io.IOException;
  * @author Martin Schoeberl (martin@jopdesign.com)
  *
  */
-public class IsaSim {
+public class IsaSimTest {
 
 	static int pc;
-	static int reg[] = new int[32];
+	static int reg[] = new int[4];
 
-	 // Here the first program hard coded as an array
-//	static int progr[] = {
-//			// As minimal RISC-V assembler example
-//			0x07D00313,
-//			0x02330393,
-//			0xF9C38E13,
-//			0x00A00513,
-//			0x00000073    
-//	};
-	static BinaryFileToHex binaryFile = new  BinaryFileToHex();
+	// Here the first program hard coded as an array
+//	BinaryFileToHex binaryFile2 = new  BinaryFileToHex();
+//	String test = binaryFile2.HexArray();
+	static int progr[] = {
+			// As minimal RISC-V assembler example
+			0x1303D007, // addi x1 x0 2
+//			0x00300113, // addi x2 x0 3
+//			0x002081b3, // add x3 x1 x2
+//			binaryFile.HexArray()[pc]
+	};
 
-	public static void main(String[] args) throws IOException {
-		
-		int progr[] = binaryFile.tester();
-		
+	public static void main(String[] args) {
 
 		System.out.println("Hello RISC-V World!");
 
@@ -36,6 +31,7 @@ public class IsaSim {
 
 		for (;;) {
 
+//			int instr = binary.HexArray()[];
 			int instr = progr[pc];
 			int opcode = instr & 0x7f;
 			int rd = (instr >> 7) & 0x01f;
