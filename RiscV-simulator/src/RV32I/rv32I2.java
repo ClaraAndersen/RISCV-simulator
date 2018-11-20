@@ -79,7 +79,7 @@ public class rv32I2 {
 					
 				case 0x4: //XORI - Exclusive or immediate
 					if((imm12 >> 11) ==1) { //negative immediate 
-						reg[rd]=(0xFFFFF000 + imm12)^(reg[res1]);
+						reg[rd]=(0xFFFFF000 + imm12)^(reg[res1]); //sign extension
 					}
 					else { //positive immediate
 							reg[rd]=(imm12)^(reg[res1]); //nothing is done to sign extend
@@ -89,7 +89,7 @@ public class rv32I2 {
 					
 				case 0x6: //ORI -or, immediate
 					if((imm12 >> 11) ==1) { //negative immediate
-						reg[rd]=(0xFFFFF000 + imm12)|(reg[res1]);
+						reg[rd]=(0xFFFFF000 + imm12)|(reg[res1]); //sign extension
 					}
 					else {
 						reg[rd]=(imm12)|(reg[res1]);
@@ -98,27 +98,27 @@ public class rv32I2 {
 					
 				case 0x7: //ANDI- bitwise and, immediate
 					if((imm12 >> 11) ==1) {//negative case
-							reg[rd]=(0xFFFFF000 + imm12) & reg[res1];
+							reg[rd]=(0xFFFFF000 + imm12) & reg[res1]; //sign extended 
 					}
 					else {//positive case
-							reg[rd]=(imm12)&(reg[res1]);
+							reg[rd]=(imm12)&(reg[res1]); 
 					}
 					break;
 					
 				case 0x1: //SLLI -Shift left logical, immediate 
 					reg[rd]= reg[res1] << res2; //we refer to res2 here, as it is equivalent to the 5 lower bits in the immediate field in the I-format.
-					break; //there might be a problem here with <<
+					break; 
 					
 				case 0x5:
 					switch(funct7) {
 					
 						case 0x0: //SRLI -Shift right logical, immediate 
-							reg[rd]= reg[res1] >>> res2;
+							reg[rd]= reg[res1] >> res2; //shift, and put zero into the bits in front
 							break;
 							
 						case 0x20: //SRAI -Shift right arithmetic immediate
-							reg[rd] = reg[res1] >> res2;
-							//>> shift the sign bit in >>> shift in 0 regardless
+							reg[rd] = reg[res1] >>> res2;
+							//>> put the sign bit into upper bits as the bits are being shifted
 							break;
 					}
 					break;
@@ -137,7 +137,7 @@ public class rv32I2 {
 				case 0x1: //SLL- Shift left logical
 					reg[rd]=reg[res1]<<(reg[res2] & 0x1F); //because it is only by the amount in the lower 5 bit
 					break;
-				case 0x2: //SLT -Set less than
+				case 0x2: //SLT -Set less than signed
 					if(reg[res1]<reg[res2]) {
 						reg[rd]=1;
 					}
