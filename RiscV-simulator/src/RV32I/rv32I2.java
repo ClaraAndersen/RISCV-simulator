@@ -2,12 +2,15 @@ package RV32I;
 
 import java.io.IOException;
 import java.lang.Math;
+import java.math.BigInteger;
 
 public class rv32I2 {
 	static int pc;
 	static int reg[] = new int[32]; //Initializing register
 	static BinaryFileToHex binaryFile = new  BinaryFileToHex();
-
+	public static int compareUnsigned(long x, long y) {
+		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
+		}
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
@@ -72,7 +75,7 @@ public class rv32I2 {
 
 				case 0x3: //SLTIU -set less than immediate unsigned 
 					if((imm12 >> 11) ==1) { //negative case
-						if(Math.abs(reg[res1])< Math.abs((0xFFFFF000 + imm12))){ //comparison with sign extension
+						if(compareUnsigned(reg[res1],(0xFFFFF000 +imm12))<0) {
 							reg[rd]=1;
 						}
 						else {
@@ -80,14 +83,16 @@ public class rv32I2 {
 						}
 					}
 					else { //positive case
-						if(Math.abs(reg[res1])< Math.abs(imm12)) {//nothing need to be done for sign extension, since sign bit is 0.
-							reg[rd]=1; 
+						if(compareUnsigned(reg[res1],imm12)<0) {
+							reg[rd]=1;
 						}
 						else {
 							reg[rd]=0;
 						}
 					}
 					break;
+					
+
 
 				case 0x4: //XORI - Exclusive or immediate
 					if((imm12 >> 11) ==1) { //negative immediate 
@@ -125,11 +130,11 @@ public class rv32I2 {
 					switch(funct7) {
 
 					case 0x0: //SRLI -Shift right logical, immediate 
-						reg[rd]= reg[res1] >> res2; //shift, and put zero into the bits in front
+						reg[rd]= reg[res1] >>> (res2 & 0x1F); //shift, and put zero into the bits in front
 					break;
 
 				case 0x20: //SRAI -Shift right arithmetic immediate
-					reg[rd] = reg[res1] >>> res2;
+					reg[rd] = reg[res1] >> (imm12 & 0x1F);
 					//>> put the sign bit into upper bits as the bits are being shifted
 					break;
 					}
@@ -144,7 +149,7 @@ public class rv32I2 {
 						reg[rd]=reg[res1]+reg[res2];
 						break;
 					case 0x20: //sub
-						reg[rd]=reg[res1]-reg[2];
+						reg[rd]=reg[res1]-reg[res2];
 						break;
 					}
 					break;
@@ -159,9 +164,14 @@ public class rv32I2 {
 						reg[rd]=0;
 					}
 					break;
-					//case 0x3: //SLTU -Set less than unsigned ?????
-					
-					
+					case 0x3: //SLTU -Set less than unsigned ?????
+							if(compareUnsigned(reg[res1],reg[res2])<0) {
+								reg[rd]=1;
+							}
+							else {
+								reg[rd]=0;
+							}
+							break;
 					
 				case 0x4: //XOR -exclusive or
 					reg[rd]=reg[res1]^reg[res2];
@@ -169,25 +179,10 @@ public class rv32I2 {
 				case 0x5:
 					switch(funct7) {
 					case 0x0://SRL -Shift right logical
-						reg[rd]=reg[res1]>>(reg[res1]& 0x1F);
+						reg[rd]=reg[res1]>>>(reg[res2]& 0x1F);
 					break;
 					case 0x20://SRA -Shift right arithmetic
-						if((reg[res1] & 80000000)==1) { //negative number
-							if((reg[res1]>>(reg[res1]& 0x1F)>>31)==0) {
-								reg[rd]= (reg[res1] >> res2)+(80000000);//set bit sign to 1
-							}
-							else {
-								reg[rd]= (reg[res1] >> res2);
-							}
-						}
-						else {//positive
-							if((reg[res1]>>(reg[res1]& 0x1F))==1) {//negative
-								reg[rd]= (reg[res1] >> res2)+(80000000);//set bit sign to 0
-							}
-							else {
-								reg[rd]= (reg[res1] >> res2);
-							}	
-						}
+						reg[rd]=reg[res1]>>(reg[res2]& 0x1F);
 						break;
 					}break;
 				case 0x6: //OR
