@@ -5,22 +5,25 @@ import java.lang.Math;
 import java.math.BigInteger;
 
 public class rv32I2 {
-	static int pc;
+	//static int pc;
+	static Boolean jumpe;
 	static int reg[] = new int[32]; //Initializing register
 	static BinaryFileToHex binaryFile = new  BinaryFileToHex();
 	public static int compareUnsigned(long x, long y) {
 		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
 		}
+	static programCounter PC = new programCounter();
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
 		int progr[] = binaryFile.tester();
 
-		pc = 0;
+//		pc = 0;
 
 		for (;;) {
+			jumpe=false;
 
-			int instr = progr[pc/4]; //reading the instruction from the instruction memory
+			int instr = progr[PC.pc/4]; //reading the instruction from the instruction memory
 
 			//Decoding the instruction
 			int opcode = instr & 0x7f; //7 first bits.
@@ -40,7 +43,7 @@ public class rv32I2 {
 				break;
 
 			case 0x17: //AUIPC -Add upper immediate to PC
-				reg[rd] = (imm20 << 12) + pc;
+				reg[rd] = (imm20 << 12) + PC.pc;
 				break;
 
 			case 0x13:
@@ -193,7 +196,14 @@ public class rv32I2 {
 					break;
 				}
 				break;
-
+				
+			case 0x6F: //JAL- Jump and link
+				reg[rd]=PC.pc+4; //we save the address for the next instruction to performe
+				PC.jump(imm12);
+				jumpe=true;
+				
+				break;
+				
 			case 0x73://ECALL
 				if(reg[10]==1) {//print int in a0(x10)
 					System.out.print(reg[11]);
@@ -224,11 +234,18 @@ public class rv32I2 {
 				System.out.println("Opcode " + opcode + " not yet implemented");
 				break;
 			}
-
-			pc=pc+4; // We count in 4 byte words
-			if (pc/4 >= progr.length) {
+			if(jumpe) {
+			PC.nextInstruction();
+			}
+			
+			if (PC.pc/4 >= progr.length) {
 				break;
 			}
+
+//			pc=pc+4; // We count in 4 byte words
+//			if (pc/4 >= progr.length) {
+//				break;
+//			}
 			for (int i = 0; i < reg.length; ++i) {
 				System.out.print(reg[i] + " ");
 			} 
