@@ -1,8 +1,6 @@
 package RV32I;
 
 import java.io.IOException;
-import java.lang.Math;
-import java.math.BigInteger;
 
 public class rv32I2 {
 	//static int pc;
@@ -12,14 +10,13 @@ public class rv32I2 {
 	public static int compareUnsigned(long x, long y) {
 		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
 		}
-	static programCounter PC = new programCounter();
+	static programCounter pc = new programCounter();
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
 		int progr[] = binaryFile.tester();
-
-//		pc = 0;
-
+		programCounter PC=pc;
+		
 		for (;;) {
 			jumpe=false;
 
@@ -167,7 +164,7 @@ public class rv32I2 {
 						reg[rd]=0;
 					}
 					break;
-					case 0x3: //SLTU -Set less than unsigned ?????
+					case 0x3: //SLTU -Set less than unsigned
 							if(compareUnsigned(reg[res1],reg[res2])<0) {
 								reg[rd]=1;
 							}
@@ -199,9 +196,98 @@ public class rv32I2 {
 				
 			case 0x6F: //JAL- Jump and link
 				reg[rd]=PC.pc+4; //we save the address for the next instruction to performe
-				PC.jump(imm12);
+				PC.jal(imm12);
 				jumpe=true;
+				break;
 				
+			case 0x67: //JALR- jump and link register
+				reg[rd]=PC.pc+4;
+				if (imm12>>11==1) { //negative case
+					 PC.pc=(reg[res1]+(0xFFFFF000 + imm12))& 0x7FFFFFFE;
+				 }
+				 else { //positive case
+					 PC.pc=(reg[res1]+imm12)& 0x7FFFFFFE;
+				 }
+				jumpe=true;
+				break;
+				
+			case 0x63:
+				switch(funct3){
+				case 0x0: //BEQ -branch if equal
+					if(reg[res1]==reg[res2]) {
+						imm12=(imm7<<5)+imm5;
+						if (imm12>>11==1) { //negative case
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+						 }
+						 else { //positive case
+							 PC.pc=PC.pc+imm12;
+						 }
+						jumpe=true;
+					}
+				break;
+				case 0x1: //BNE -branch if not equal
+					if(reg[res1]!=reg[res2]) {
+						imm12=(imm7<<5)+imm5;
+						if (imm12>>11==1) { //negative case
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+						 }
+						 else { //positive case
+							 PC.pc=PC.pc+imm12;
+						 }
+						jumpe=true;
+					}
+				break;
+				case 0x4: //BLT -branch if less than
+					if(reg[res1]<reg[res2]) {
+						imm12=(imm7<<5)+imm5;
+						if (imm12>>11==1) { //negative case
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+						 }
+						 else { //positive case
+							 PC.pc=PC.pc+imm12;
+						 }
+						jumpe=true;
+					}
+				break;
+				case 0x6: //BLTU -branch if less than, unsigned
+					if(compareUnsigned(reg[res1],reg[res2])<0) {
+						imm12=(imm7<<5)+imm5;
+						if (imm12>>11==1) { //negative case
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+						 }
+						 else { //positive case
+							 PC.pc=PC.pc+imm12;
+						 }
+						jumpe=true;
+					}
+				break;
+				
+				case 0x7: //BGEU -branch if greater than or equal, unsigned
+					if(compareUnsigned(reg[res1],reg[res2])>=0) {
+						imm12=(imm7<<5)+imm5;
+						if (imm12>>11==1) { //negative case
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+						 }
+						 else { //positive case
+							 PC.pc=PC.pc+imm12;
+						 }
+						jumpe=true;
+					}
+				break;
+					
+				case 0x5: //BGE -branch if greater than or equal 
+					if(reg[res1]>=reg[res2]) {
+						imm12=(imm7<<5)+imm5;
+						if (imm12>>11==1) { //negative case
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+						 }
+						 else { //positive case
+							 PC.pc=PC.pc+imm12;
+						 }
+						jumpe=true;
+					}
+					break;
+				}
 				break;
 				
 			case 0x73://ECALL
@@ -234,7 +320,7 @@ public class rv32I2 {
 				System.out.println("Opcode " + opcode + " not yet implemented");
 				break;
 			}
-			if(jumpe) {
+			if(!jumpe) {
 			PC.nextInstruction();
 			}
 			
