@@ -11,6 +11,7 @@ public class rv32I2 {
 		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
 		}
 	static programCounter pc = new programCounter();
+	static int memory[]= new int[(int) Math.pow(1000,2)];
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
@@ -290,6 +291,120 @@ public class rv32I2 {
 				}
 				break;
 				
+			case 0x3:
+				switch(funct3) {
+				case 0x0: //LB -load byte
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+						if(memory[reg[res1]+imm12]<0) { //negative value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFF) + 0xFFFFFF00;
+						}
+						else {//positive value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFF);
+						}
+						
+					}
+					else { //positive offset
+						if(memory[reg[res1]+imm12]<0) { //negative value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFF) + 0xFFFFFF00;
+						}
+						else {//positive value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFF);
+						}
+					}
+					break;
+					
+					
+				case 0x1: //LH -load hexa
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+						if(memory[reg[res1]+imm12]<0) { //negative value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF) + 0xFFFF0000;
+						}
+						else {//positive value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF);
+						}
+						
+					}
+					else { //positive offset
+						if(memory[reg[res1]+imm12]<0) { //negative value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF) + 0xFFFF0000;
+						}
+						else {//positive value in memory
+							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF);
+						}
+					}
+				break;
+				
+				case 0x2: //LW -load word
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+					}
+					reg[rd]=memory[reg[res1]+imm12];
+				break;
+					
+				}
+			break;	
+				
+			case 0x23:
+				switch(funct3) {
+				case 0x0: //SB -save byte
+					imm12=(imm7<<5)+imm5;
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+						if(reg[res2]<0) {//storing negative value
+							memory[reg[res1]+imm12]=(reg[res2] & 0xFF) + 0xFFFFFF00;	
+						}
+						else { //storing positive value
+							memory[reg[res1]+imm12]=reg[res2] & 0xFF;
+						}
+					}
+					else { //positive off set
+						if(reg[res2]<0) {//storing negative value
+							memory[reg[res1]+imm12]=(reg[res2] & 0xFF) + 0xFFFFFF00;	
+						}
+						else { //storing positive value
+							memory[reg[res1]+imm12]=reg[res2] & 0xFF;
+						}
+					}
+					System.out.println(memory[reg[res1]+imm12]);
+				break;
+				
+				case 0x1: //SH -save hexa
+					imm12=(imm7<<5)+imm5;
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+						if(reg[res2]<0) {//storing negative value
+							memory[reg[res1]+imm12]=(reg[res2] & 0xFFFF) + 0xFFFF0000;	
+						}
+						else { //storing positive value
+							memory[reg[res1]+imm12]=reg[res2] & 0xFFFF;
+						}
+					}
+					else { //positive off set
+						if(reg[res2]<0) {//storing negative value
+							memory[reg[res1]+imm12]=(reg[res2] & 0xFFFF) + 0xFFFF0000;	
+						}
+						else { //storing positive value
+							memory[reg[res1]+imm12]=reg[res2] & 0xFFFF;
+						}
+					}
+					System.out.println(memory[reg[res1]+imm12]);
+				break;
+				
+				case 0x2: //SW -save word
+					imm12=(imm7<<5)+imm5;
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+					}
+					memory[reg[res1]+imm12]=reg[res2];	
+					System.out.println(memory[reg[res1]+imm12]);
+				break;
+				
+				}	
+			break;
+				
+				
 			case 0x73://ECALL
 				if(reg[10]==1) {//print int in a0(x10)
 					System.out.print(reg[11]);
@@ -301,7 +416,8 @@ public class rv32I2 {
 
 				}
 				else if(reg[10]==10) {//exit programm
-					System.exit(1);
+					PC.pc= progr.length*5;
+					//System.exit(1);
 				}
 				else if(reg[10]==11) { //prints ASCII character in a1
 					System.out.print(reg[11]);
@@ -328,16 +444,12 @@ public class rv32I2 {
 				break;
 			}
 
-//			pc=pc+4; // We count in 4 byte words
-//			if (pc/4 >= progr.length) {
-//				break;
-//			}
 			for (int i = 0; i < reg.length; ++i) {
 				System.out.print(reg[i] + " ");
 			} 
 			System.out.println();
 		}
-
+		
 		System.out.println("Program exit");
 
 	}

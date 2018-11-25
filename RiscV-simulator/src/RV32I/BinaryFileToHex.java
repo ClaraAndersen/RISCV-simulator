@@ -19,7 +19,7 @@ public class BinaryFileToHex {
 	// Method that reads the binary file containing the instruction 
 	// set into a byte array.
 	public static byte[] readByteArray() throws IOException{
-		Path path = Paths.get("./src/test2/branchmany.bin");
+		Path path = Paths.get("./src/tests/test_sw.bin");
 		byte[] data = Files.readAllBytes(path);
 		return data;
 	}
