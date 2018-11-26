@@ -4,6 +4,7 @@ import java.io.IOException;
 
 public class rv32I2 {
 	//static int pc;
+	static byte [] memory = new byte [4000000];
 	static Boolean jumpe;
 	static int reg[] = new int[32]; //Initializing register
 	static BinaryFileToHex binaryFile = new  BinaryFileToHex();
@@ -11,7 +12,7 @@ public class rv32I2 {
 		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
 		}
 	static programCounter pc = new programCounter();
-	static int memory[]= new int[(int) Math.pow(1000,2)];
+	//static int memory[]= new int[(int) Math.pow(1000,2)];
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
@@ -318,32 +319,41 @@ public class rv32I2 {
 				case 0x1: //LH -load hexa
 					if(imm12<0) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
-						if(memory[reg[res1]+imm12]<0) { //negative value in memory
-							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF) + 0xFFFF0000;
-						}
-						else {//positive value in memory
-							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF);
-						}
-						
 					}
-					else { //positive offset
-						if(memory[reg[res1]+imm12]<0) { //negative value in memory
-							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF) + 0xFFFF0000;
-						}
-						else {//positive value in memory
-							reg[rd]=((memory[reg[res1]+imm12])& 0xFFFF);
-						}
-					}
+					reg[rd]=((int)memory[reg[res1]+imm12+1]<<8) + (((int)memory[reg[res1]+imm12])& 0xFF);
+					
 				break;
 				
 				case 0x2: //LW -load word
 					if(imm12<0) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
-					reg[rd]=memory[reg[res1]+imm12];
+					reg[rd]= (((int)memory[reg[res1]+imm12+3]<<24))+
+							(((int)memory[reg[res1]+imm12+2]<<16)&0xFFFFFF)+
+							(((int)memory[reg[res1]+imm12+1]<<8)&0xFFFF) + 
+							(((int)memory[reg[res1]+imm12])& 0xFF);
+					
+				break;
+				
+				case 0x4: //LBU -load byte unsigned
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+					}
+					reg[rd]= (((int)memory[reg[res1]+imm12])& 0xFF);
+					
+				break;
+				
+				case 0x5: //LHU -load hexa unsigned 
+					if(imm12<0) { //negative offset
+						imm12=(imm12 + 0xFFFFF000);
+					}
+					reg[rd]= (((int)memory[reg[res1]+imm12+1]<<8)&0xFFFF) + 
+							(((int)memory[reg[res1]+imm12])& 0xFF);
+					
 				break;
 					
 				}
+				
 			break;	
 				
 			case 0x23:
@@ -351,45 +361,21 @@ public class rv32I2 {
 				case 0x0: //SB -save byte
 					imm12=(imm7<<5)+imm5;
 					if(imm12<0) { //negative offset
-						imm12=(imm12 + 0xFFFFF000);
-						if(reg[res2]<0) {//storing negative value
-							memory[reg[res1]+imm12]=(reg[res2] & 0xFF) + 0xFFFFFF00;	
-						}
-						else { //storing positive value
-							memory[reg[res1]+imm12]=reg[res2] & 0xFF;
-						}
+						imm12 = (imm12 + 0xFFFFF000);	
 					}
-					else { //positive off set
-						if(reg[res2]<0) {//storing negative value
-							memory[reg[res1]+imm12]=(reg[res2] & 0xFF) + 0xFFFFFF00;	
-						}
-						else { //storing positive value
-							memory[reg[res1]+imm12]=reg[res2] & 0xFF;
-						}
-					}
+					memory[(reg[res1]+imm12)]=(byte) (reg[res2] & 0xFF);
 					System.out.println(memory[reg[res1]+imm12]);
 				break;
 				
 				case 0x1: //SH -save hexa
 					imm12=(imm7<<5)+imm5;
 					if(imm12<0) { //negative offset
-						imm12=(imm12 + 0xFFFFF000);
-						if(reg[res2]<0) {//storing negative value
-							memory[reg[res1]+imm12]=(reg[res2] & 0xFFFF) + 0xFFFF0000;	
-						}
-						else { //storing positive value
-							memory[reg[res1]+imm12]=reg[res2] & 0xFFFF;
-						}
+						imm12=(imm12 + 0xFFFFF000);	
 					}
-					else { //positive off set
-						if(reg[res2]<0) {//storing negative value
-							memory[reg[res1]+imm12]=(reg[res2] & 0xFFFF) + 0xFFFF0000;	
-						}
-						else { //storing positive value
-							memory[reg[res1]+imm12]=reg[res2] & 0xFFFF;
-						}
-					}
-					System.out.println(memory[reg[res1]+imm12]);
+					memory[reg[res1]+imm12]=(byte)(reg[res2] & 0xFF);
+					memory[reg[res1]+imm12+1]=(byte)((reg[res2] >> 8) & 0xFF);	
+					System.out.println("+0: "+ memory[reg[res1]+imm12]);
+					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
 				break;
 				
 				case 0x2: //SW -save word
@@ -397,8 +383,15 @@ public class rv32I2 {
 					if(imm12<0) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
-					memory[reg[res1]+imm12]=reg[res2];	
-					System.out.println(memory[reg[res1]+imm12]);
+					memory[reg[res1]+imm12]=(byte)(reg[res2] & 0xFF);
+					memory[reg[res1]+imm12+1]=(byte)((reg[res2] >> 8) & 0xFF);	
+					memory[reg[res1]+imm12+2]=(byte)((reg[res2] >> 16) & 0xFF);	
+					memory[reg[res1]+imm12+3]=(byte)((reg[res2] >> 24) & 0xFF);	
+					
+					System.out.println("+0: "+ memory[reg[res1]+imm12]);
+					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
+					System.out.println("+2: "+ memory[reg[res1]+imm12+2]);
+					System.out.println("+3: "+ memory[reg[res1]+imm12+3]);
 				break;
 				
 				}	
@@ -415,16 +408,15 @@ public class rv32I2 {
 				else if(reg[10]==9) {//allocates a1 bytes on the heap, returns pointer to start in a0
 
 				}
-				else if(reg[10]==10) {//exit programm
+				else if(reg[10]==10) {//exit program
 					PC.pc= progr.length*5;
-					//System.exit(1);
 				}
 				else if(reg[10]==11) { //prints ASCII character in a1
-					System.out.print(reg[11]);
+					System.out.println(Character.toString ((char) reg[11]));
 				}
 				else if(reg[10]==17) { //ends the program with return code in a1
 					System.out.print(reg[11]);
-					System.exit(1);
+					PC.pc= progr.length*5;
 				}
 				else {//not recognized ID in a0
 					System.out.print("ecall " +reg[10] + " is not valid ");
