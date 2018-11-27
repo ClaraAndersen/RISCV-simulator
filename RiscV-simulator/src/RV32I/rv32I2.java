@@ -16,10 +16,114 @@ public class rv32I2 {
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
+<<<<<<< HEAD
 //		int progr[] = binaryFile.tester();
 		int progr[] = {-20699261};
+=======
+		int progr[] = binaryFile.tester();
+//		int progr[] = {
+//				0x00100137,  
+//				0x00010113,
+//				0x07c000ef,
+//				0x00050593,
+//				0x00a00513,
+//				0x00000073,
+//				0xfd010113,
+//				0x02812623,
+//				0x03010413,
+//				0xfca42e23,
+//				0xfcb42c23,
+//				0xfe042623,
+//				0xfe042423,
+//				0x0300006f,
+//				0xfe842783,
+//				0x00279793,
+//				0xfdc42703,
+//				0x00f707b3,
+//				0x0007a783,
+//				0xfec42703,
+//				0x00f707b3,
+//				0xfef42623,
+//				0xfe842783,
+//				0x00178793,
+//				0xfef42423,
+//				0xfe842703,
+//				0xfd842783,
+//				0xfcf746e3,
+//				0xfec42783,
+//				0x00078513,
+//				0x02c12403,
+//				0x03010113,
+//				0x00008067,
+//				0xfd010113,
+//				0x02112623,
+//				0x02812423,
+//				0x02912223,
+//				0x03010413,
+//				0x00010513,
+//				0x00050493,
+//				0x06400513,
+//				0xfea42423,
+//				0xfe842503,
+//				0xfff50893,
+//				0xff142223,
+//				0x00050893,
+//				0x00088313,
+//				0x00000393,
+//				0x01b35893,
+//				0x00539713,
+//				0x00e8e733,
+//				0x00531693,
+//				0x00050713,
+//				0x00070593,
+//				0x00000613,
+//				0x01b5d713,
+//				0x00561813,
+//				0x01076833,
+//				0x00559793,
+//				0x00050793,
+//				0x00279793,
+//				0x00378793,
+//				0x00f78793,
+//				0x0047d793,
+//				0x00479793,
+//				0x40f10133,
+//				0x00010793,
+//				0x00378793,
+//				0x0027d793,
+//				0x00279793,
+//				0xfef42023,
+//				0xfe042623,
+//				0x0280006f,
+//				0xfe042703,
+//				0xfec42783,
+//				0x00279793,
+//				0x00f707b3,
+//				0xfec42703,
+//				0x00e7a023,
+//				0xfec42783,
+//				0x00178793,
+//				0xfef42623,
+//				0xfec42703,
+//				0xfe842783,
+//				0xfcf74ae3,
+//				0xfe042783,
+//				0xfe842583,
+//				0x00078513,
+//				0x00000317,
+//				0xeb8300e7,
+//				0xfca42e23,
+//				0x00048113,
+//				0x00000013,
+//				0xfd040113,
+//				0x02c12083,
+//				0x02812403,
+//				0x02412483,
+//				0x03010113,
+//				0x00008067,
+//		};
+>>>>>>> branch 'memory_experiment' of https://github.com/ClaraAndersen/RISCV-simulator.git
 		programCounter PC=pc;
-		
 		for (;;) {
 			jumpe=false;
 			
@@ -37,7 +141,11 @@ public class rv32I2 {
 			int imm5 =(instr >> 7) & 0x1f;
 			int imm20 =(instr>>12) & 0xFFFFF;
 			
+<<<<<<< HEAD
 			System.out.println(opcode);
+=======
+//			reg[0]=0;
+>>>>>>> branch 'memory_experiment' of https://github.com/ClaraAndersen/RISCV-simulator.git
 			
 			switch (opcode) {
 			case 0x37: //LUI -Load upper immediate
@@ -200,13 +308,17 @@ public class rv32I2 {
 				break;
 				
 			case 0x6F: //JAL- Jump and link
+				if (rd!=0) { // Test if we should save link
 				reg[rd]=PC.pc+4; //we save the address for the next instruction to performe
+				}
 				PC.jal(imm12);
 				jumpe=true;
 				break;
 				
 			case 0x67: //JALR- jump and link register
+				if (rd!=0) { // Test if we should save link
 				reg[rd]=PC.pc+4;
+				}
 				if (imm12>>11==1) { //negative case
 					 PC.pc=(reg[res1]+(0xFFFFF000 + imm12))& 0x7FFFFFFE;
 				 }
@@ -222,10 +334,10 @@ public class rv32I2 {
 					if(reg[res1]==reg[res2]) {
 						imm12=(imm7<<5)+imm5;
 						if (imm12>>11==1) { //negative case
-							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12)-4;
 						 }
 						 else { //positive case
-							 PC.pc=PC.pc+imm12;
+							 PC.pc=(PC.pc+imm12)-4;
 						 }
 						jumpe=true;
 					}
@@ -234,34 +346,36 @@ public class rv32I2 {
 					if(reg[res1]!=reg[res2]) {
 						imm12=(imm7<<5)+imm5;
 						if (imm12>>11==1) { //negative case
-							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12)-4;
 						 }
 						 else { //positive case
-							 PC.pc=PC.pc+imm12;
+							 PC.pc=(PC.pc+imm12)-4;
 						 }
 						jumpe=true;
 					}
 				break;
 				case 0x4: //BLT -branch if less than
 					if(reg[res1]<reg[res2]) {
-						imm12=(imm7<<5)+imm5;
-						if (imm12>>11==1) { //negative case
-							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+						int imm13=((imm7<<5)+imm5);
+						if (imm13>>12==1) { //negative case
+							 PC.pc=PC.pc+(0xFFFFE000 + imm13);
 						 }
 						 else { //positive case
-							 PC.pc=PC.pc+imm12;
+							 PC.pc=(PC.pc+imm13);
 						 }
 						jumpe=true;
+						
 					}
+					
 				break;
 				case 0x6: //BLTU -branch if less than, unsigned
 					if(compareUnsigned(reg[res1],reg[res2])<0) {
 						imm12=(imm7<<5)+imm5;
 						if (imm12>>11==1) { //negative case
-							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12)-4;
 						 }
 						 else { //positive case
-							 PC.pc=PC.pc+imm12;
+							 PC.pc=(PC.pc+imm12)-4;
 						 }
 						jumpe=true;
 					}
@@ -271,10 +385,10 @@ public class rv32I2 {
 					if(compareUnsigned(reg[res1],reg[res2])>=0) {
 						imm12=(imm7<<5)+imm5;
 						if (imm12>>11==1) { //negative case
-							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12)-4;
 						 }
 						 else { //positive case
-							 PC.pc=PC.pc+imm12;
+							 PC.pc=(PC.pc+imm12)-4;
 						 }
 						jumpe=true;
 					}
@@ -284,10 +398,10 @@ public class rv32I2 {
 					if(reg[res1]>=reg[res2]) {
 						imm12=(imm7<<5)+imm5;
 						if (imm12>>11==1) { //negative case
-							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
+							 PC.pc=PC.pc+(0xFFFFF000 + imm12)-4;
 						 }
 						 else { //positive case
-							 PC.pc=PC.pc+imm12;
+							 PC.pc=(PC.pc+imm12)-4;
 						 }
 						jumpe=true;
 					}
