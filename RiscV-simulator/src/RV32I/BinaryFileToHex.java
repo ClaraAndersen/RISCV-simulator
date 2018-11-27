@@ -19,7 +19,7 @@ public class BinaryFileToHex {
 	// Method that reads the binary file containing the instruction 
 	// set into a byte array.
 	public static byte[] readByteArray() throws IOException{
-		Path path = Paths.get("./src/tests/test_ecall.bin");
+		Path path = Paths.get("./src/test3/loop.bin");
 		byte[] data = Files.readAllBytes(path);
 		return data;
 	}
@@ -86,6 +86,8 @@ public class BinaryFileToHex {
 //		int[] result= {0x07D00313, 0x02330393, 0xF9C38E13, 0x00A00513, 0x00000073};
 		String[] test = HexArray();
 		int[] result = StringArrToIntArr(test);
+		System.out.println(result[1]);
+		System.out.println(result.length);
 		return result;
 	}
 

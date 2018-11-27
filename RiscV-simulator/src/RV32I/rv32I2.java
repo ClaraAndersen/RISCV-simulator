@@ -16,14 +16,15 @@ public class rv32I2 {
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
-		int progr[] = binaryFile.tester();
+//		int progr[] = binaryFile.tester();
+		int progr[] = {-20699261};
 		programCounter PC=pc;
 		
 		for (;;) {
 			jumpe=false;
-
+			
 			int instr = progr[PC.pc/4]; //reading the instruction from the instruction memory
-
+			//System.out.println(instr);
 			//Decoding the instruction
 			int opcode = instr & 0x7f; //7 first bits.
 			int rd = (instr >> 7) & 0x01f;
@@ -35,7 +36,9 @@ public class rv32I2 {
 			int imm7 =(instr>>25) & 0x7F;
 			int imm5 =(instr >> 7) & 0x1f;
 			int imm20 =(instr>>12) & 0xFFFFF;
-
+			
+			System.out.println(opcode);
+			
 			switch (opcode) {
 			case 0x37: //LUI -Load upper immediate
 				reg[rd] = imm20 << 12;
@@ -364,7 +367,7 @@ public class rv32I2 {
 						imm12 = (imm12 + 0xFFFFF000);	
 					}
 					memory[(reg[res1]+imm12)]=(byte) (reg[res2] & 0xFF);
-					System.out.println(memory[reg[res1]+imm12]);
+//					System.out.println(memory[reg[res1]+imm12]);
 				break;
 				
 				case 0x1: //SH -save hexa
@@ -374,8 +377,8 @@ public class rv32I2 {
 					}
 					memory[reg[res1]+imm12]=(byte)(reg[res2] & 0xFF);
 					memory[reg[res1]+imm12+1]=(byte)((reg[res2] >> 8) & 0xFF);	
-					System.out.println("+0: "+ memory[reg[res1]+imm12]);
-					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
+//					System.out.println("+0: "+ memory[reg[res1]+imm12]);
+//					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
 				break;
 				
 				case 0x2: //SW -save word
@@ -388,10 +391,10 @@ public class rv32I2 {
 					memory[reg[res1]+imm12+2]=(byte)((reg[res2] >> 16) & 0xFF);	
 					memory[reg[res1]+imm12+3]=(byte)((reg[res2] >> 24) & 0xFF);	
 					
-					System.out.println("+0: "+ memory[reg[res1]+imm12]);
-					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
-					System.out.println("+2: "+ memory[reg[res1]+imm12+2]);
-					System.out.println("+3: "+ memory[reg[res1]+imm12+3]);
+//					System.out.println("+0: "+ memory[reg[res1]+imm12]);
+//					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
+//					System.out.println("+2: "+ memory[reg[res1]+imm12+2]);
+//					System.out.println("+3: "+ memory[reg[res1]+imm12+3]);
 				break;
 				
 				}	
