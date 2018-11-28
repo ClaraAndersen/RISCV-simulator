@@ -11,7 +11,7 @@ public class ReadBinary {
 
 	static ArrayList<Integer> progr=new ArrayList<>();
 	
-	static String destination = "./src/Final_test/t14.bin";
+	static String destination = "./src/Final_test/t14.bin"; 
 	
 	public static ArrayList<Integer> readBinFile(String destination) throws IOException{
 		DataInputStream binfile = new DataInputStream(new FileInputStream(destination));

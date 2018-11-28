@@ -36,7 +36,7 @@ public class rv32I2 {
 			
 			switch (opcode) {
 			case 0x37: //LUI -Load upper immediate
-				reg[rd] = imm20 << 12;
+				reg[rd] = (imm20 << 12);
 				break;
 
 			case 0x17: //AUIPC -Add upper immediate to PC
@@ -47,7 +47,7 @@ public class rv32I2 {
 				switch (funct3) {
 
 				case 0x0: //ADDI- Add immediate
-					if((imm12 >> 11) ==1) { //negative immediate 
+					if((imm12 >>> 11) ==1) { //negative immediate 
 						reg[rd]=(0xFFFFF000 + imm12)+(reg[res1]); //sign extension
 					}
 					else { //positive immediate
@@ -55,7 +55,7 @@ public class rv32I2 {
 					}
 					break;
 				case 0x2: // SLTI - Set less than immediate
-					if((imm12 >> 11) ==1) { //negative immediate 
+					if((imm12 >>> 11) ==1) { //negative immediate 
 						if(reg[res1]< 0xFFFFF000 + imm12) {//comparison with sign extension
 							reg[rd]=1;
 						}
@@ -74,7 +74,7 @@ public class rv32I2 {
 					break;
 
 				case 0x3: //SLTIU -set less than immediate unsigned 
-					if((imm12 >> 11) ==1) { //negative case
+					if((imm12 >>> 11) ==1) { //negative case
 						if(compareUnsigned(reg[res1],(0xFFFFF000 +imm12))<0) {
 							reg[rd]=1;
 						}
@@ -95,7 +95,7 @@ public class rv32I2 {
 
 
 				case 0x4: //XORI - Exclusive or immediate
-					if((imm12 >> 11) ==1) { //negative immediate 
+					if((imm12 >>> 11) ==1) { //negative immediate 
 						reg[rd]=(0xFFFFF000 + imm12)^(reg[res1]); //sign extension
 					}
 					else { //positive immediate
@@ -105,7 +105,7 @@ public class rv32I2 {
 					break;
 
 				case 0x6: //ORI -or, immediate
-					if((imm12 >> 11) ==1) { //negative immediate
+					if((imm12 >>> 11) ==1) { //negative immediate
 						reg[rd]=(0xFFFFF000 + imm12)|(reg[res1]); //sign extension
 					}
 					else {
@@ -114,7 +114,7 @@ public class rv32I2 {
 					break;
 
 				case 0x7: //ANDI- bitwise and, immediate
-					if((imm12 >> 11) ==1) {//negative case
+					if((imm12 >>> 11) ==1) {//negative case
 						reg[rd]=(0xFFFFF000 + imm12) & reg[res1]; //sign extended 
 					}
 					else {//positive case
@@ -195,10 +195,16 @@ public class rv32I2 {
 				break;
 				
 			case 0x6F: //JAL- Jump and link
+				//getting offset
+				int im20 = (instr>>31) & 0x1;
+				int im19_12 = (instr>>12) & 0xFF;
+				int im_11 = (instr>>20) & 0x1;
+				int im1_10 = (instr>>21) & 0x3FF;
+				int imjal= (((im20<<19)+(im19_12<<11))+(im_11<<10)+im1_10)<<1;
 				if (rd!=0) { // Test if we should save link
 				reg[rd]=PC.pc+4; //we save the address for the next instruction to performe
 				}
-				PC.jal(imm12);
+				PC.jal(imjal,im20);
 				jumpe=true;
 				break;
 				
@@ -206,11 +212,13 @@ public class rv32I2 {
 				if (rd!=0) { // Test if we should save link
 				reg[rd]=PC.pc+4;
 				}
-				if (imm12>>11==1) { //negative case
-					 PC.pc=(reg[res1]+(0xFFFFF000 + imm12))& 0x7FFFFFFE;
+				if (imm12>>>11==1) { //negative case
+					// PC.pc=(reg[res1]+(0xFFFFF000 + imm12))& 0x7FFFFFFE;
+					PC.pc=(reg[res1]+(0xFFFFF000 + imm12))& 0xFFFFFFFE;
 				 }
 				 else { //positive case
-					 PC.pc=(reg[res1]+imm12)& 0x7FFFFFFE;
+					// PC.pc=(reg[res1]+imm12)& 0x7FFFFFFE;
+					 PC.pc=(reg[res1]+imm12)& 0xFFFFFFFE;
 				 }
 				jumpe=true;
 				break;
@@ -344,7 +352,8 @@ public class rv32I2 {
 			case 0x3:
 				switch(funct3) {
 				case 0x0: //LB -load byte
-					if(imm12<0) { //negative offset
+//					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 						if(memory[reg[res1]+imm12]<0) { //negative value in memory
 							reg[rd]=((memory[reg[res1]+imm12])& 0xFF) + 0xFFFFFF00;
@@ -366,7 +375,8 @@ public class rv32I2 {
 					
 					
 				case 0x1: //LH -load hexa
-					if(imm12<0) { //negative offset
+//					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
 					reg[rd]=((int)memory[reg[res1]+imm12+1]<<8) + (((int)memory[reg[res1]+imm12])& 0xFF);
@@ -374,7 +384,8 @@ public class rv32I2 {
 				break;
 				
 				case 0x2: //LW -load word
-					if(imm12<0) { //negative offset
+//					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
 					reg[rd]= (((int)memory[reg[res1]+imm12+3]<<24))+
@@ -385,7 +396,8 @@ public class rv32I2 {
 				break;
 				
 				case 0x4: //LBU -load byte unsigned
-					if(imm12<0) { //negative offset
+//					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
 					reg[rd]= (((int)memory[reg[res1]+imm12])& 0xFF);
@@ -393,7 +405,8 @@ public class rv32I2 {
 				break;
 				
 				case 0x5: //LHU -load hexa unsigned 
-					if(imm12<0) { //negative offset
+//					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
 					reg[rd]= (((int)memory[reg[res1]+imm12+1]<<8)&0xFFFF) + 
@@ -409,7 +422,8 @@ public class rv32I2 {
 				switch(funct3) {
 				case 0x0: //SB -save byte
 					imm12=(imm7<<5)+imm5;
-					if(imm12<0) { //negative offset
+//					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
 						imm12 = (imm12 + 0xFFFFF000);	
 					}
 					memory[(reg[res1]+imm12)]=(byte) (reg[res2] & 0xFF);
@@ -418,7 +432,8 @@ public class rv32I2 {
 				
 				case 0x1: //SH -save hexa
 					imm12=(imm7<<5)+imm5;
-					if(imm12<0) { //negative offset
+//					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);	
 					}
 					memory[reg[res1]+imm12]=(byte)(reg[res2] & 0xFF);
@@ -429,7 +444,8 @@ public class rv32I2 {
 				
 				case 0x2: //SW -save word
 					imm12=(imm7<<5)+imm5;
-					if(imm12<0) { //negative offset
+					if(imm12>>>11==1) { //negative offset
+//					if(imm12<0) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
 					memory[reg[res1]+imm12]=(byte)(reg[res2] & 0xFF);
@@ -437,10 +453,10 @@ public class rv32I2 {
 					memory[reg[res1]+imm12+2]=(byte)((reg[res2] >> 16) & 0xFF);	
 					memory[reg[res1]+imm12+3]=(byte)((reg[res2] >> 24) & 0xFF);	
 					
-//					System.out.println("+0: "+ memory[reg[res1]+imm12]);
-//					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
-//					System.out.println("+2: "+ memory[reg[res1]+imm12+2]);
-//					System.out.println("+3: "+ memory[reg[res1]+imm12+3]);
+					System.out.println("+0: "+ memory[reg[res1]+imm12]);
+					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
+					System.out.println("+2: "+ memory[reg[res1]+imm12+2]);
+					System.out.println("+3: "+ memory[reg[res1]+imm12+3]);
 				break;
 				
 				}	
