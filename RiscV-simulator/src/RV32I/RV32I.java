@@ -1,29 +1,39 @@
 package RV32I;
 
+//by Atli Olsen s130332 and Clara Andersen s164574
+
 import java.io.IOException;
 
-public class rv32I2 {
+public class RV32I {
 	static byte [] memory = new byte [4000000];
-	static Boolean jumpe;
-	static String BinaryDumpFile ="";
 	static int reg[] = new int[32]; //Initializing register
-	static BinaryFileToHex binaryFile = new  BinaryFileToHex();
+	static String BinaryDumpFile ="";
 	static ReadBinary readBin = new ReadBinary();
 	static BinaryDump BinDump = new BinaryDump();
+	
+	
 	public static int compareUnsigned(long x, long y) {
 		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
 		}
+	
+	static Boolean jumpe;
 	static programCounter pc = new programCounter();
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
+		
+		//Read program to instruction memory
 		int progr[] = readBin.intArray();
+		//initialzing program counter
 		programCounter PC=pc;
 		
 		for (;;) {
+			
 			jumpe=false;
 			
-			int instr = progr[PC.pc/4]; //reading the instruction from the instruction memory
+			//reading instruction
+			int instr = progr[PC.pc/4];
+			
 			//Decoding the instruction
 			int opcode = instr & 0x7f; //7 first bits.
 			int rd = (instr >> 7) & 0x01f;
@@ -204,7 +214,7 @@ public class rv32I2 {
 				int im1_10 = (instr>>21) & 0x3FF;
 				int imjal= (((im20<<19)+(im19_12<<11))+(im_11<<10)+im1_10)<<1;
 				if (rd!=0) { // Test if we should save link
-				reg[rd]=PC.pc+4; //we save the address for the next instruction to performe
+				reg[rd]=PC.pc+4; //we save the address for the next instruction
 				}
 				PC.jal(imjal,im20);
 				jumpe=true;
@@ -215,11 +225,9 @@ public class rv32I2 {
 				reg[rd]=PC.pc+4;
 				}
 				if (imm12>>>11==1) { //negative case
-					// PC.pc=(reg[res1]+(0xFFFFF000 + imm12))& 0x7FFFFFFE;
 					PC.pc=(reg[res1]+(0xFFFFF000 + imm12))& 0xFFFFFFFE;
 				 }
 				 else { //positive case
-					// PC.pc=(reg[res1]+imm12)& 0x7FFFFFFE;
 					 PC.pc=(reg[res1]+imm12)& 0xFFFFFFFE;
 				 }
 				jumpe=true;
@@ -229,6 +237,7 @@ public class rv32I2 {
 				switch(funct3){
 				case 0x0: //BEQ -branch if equal
 					if(reg[res1]==reg[res2]) {
+						
 						int im11 = (instr>>7) & 0x1;
 						int im4 = (instr>>8) & 0xF;
 						int im6 = (instr>>25) & 0x3F;
@@ -266,7 +275,6 @@ public class rv32I2 {
 						int im4 = (instr>>8) & 0xF;
 						int im6 = (instr>>25) & 0x3F;
 						int im1 = (instr>>31) & 0x1;
-						//int imm13= (((im1<<11)+(im11<<10))+(im6<<4) + im4)<<1;
 						int imm13= ((((im1<<11) & 0x800)+((im11<<10) & 0x400))+((im6<<4) & 0x3F0) + (im4 & 0xF))<<1;
 						if (im1==1) { //negative case
 							PC.pc=PC.pc+(0xFFFFE000 + imm13);
@@ -281,21 +289,16 @@ public class rv32I2 {
 				break;
 				case 0x6: //BLTU -branch if less than, unsigned
 					if(compareUnsigned(reg[res1],reg[res2])<0) {
-//						imm12=(imm7<<5)+imm5;
+//	
 						int im11 = (instr>>7) & 0x1;
 						int im4 = (instr>>8) & 0xF;
 						int im6 = (instr>>25) & 0x3F;
 						int im1 = (instr>>31) & 0x1;
- 						//int imm13=((imm7<<5)+imm5);
 						int imm13= (((im1<<11)+(im11<<10))+(im6<<4)+im4)<<1;
 						if (im1==1) { //negative case
-//							 PC.pc=PC.pc+(0xFFFFE000 + imm13);
 							PC.pc=PC.pc+(0xFFFFE000 + imm13);
 						 }
-//						if (imm12>>11==1) { //negative case
-//							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
-//						 }
-						 else { //positive case
+						else { //positive case
 							 PC.pc=PC.pc+imm13;
 						 }
 						jumpe=true;
@@ -304,20 +307,14 @@ public class rv32I2 {
 				
 				case 0x7: //BGEU -branch if greater than or equal, unsigned
 					if(compareUnsigned(reg[res1],reg[res2])>=0) {
-//						imm12=(imm7<<5)+imm5;
 						int im11 = (instr>>7) & 0x1;
 						int im4 = (instr>>8) & 0xF;
 						int im6 = (instr>>25) & 0x3F;
 						int im1 = (instr>>31) & 0x1;
- 						//int imm13=((imm7<<5)+imm5);
 						int imm13= (((im1<<11)+(im11<<10))+(im6<<4)+im4)<<1;
 						if (im1==1) { //negative case
-//							 PC.pc=PC.pc+(0xFFFFE000 + imm13);
 							PC.pc=PC.pc+(0xFFFFE000 + imm13);
 						 }
-//						if (imm12>>11==1) { //negative case
-//							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
-//						 }
 						 else { //positive case
 							 PC.pc=PC.pc+imm13;
 						 }
@@ -331,15 +328,8 @@ public class rv32I2 {
 						int im4 = (instr>>8) & 0xF;
 						int im6 = (instr>>25) & 0x3F;
 						int im1 = (instr>>31) & 0x1;
- 						//int imm13=((imm7<<5)+imm5);
 						int imm13= (((im1<<11)+(im11<<10))+(im6<<4)+im4)<<1;
-//						if (imm13<0) { //negative case
-//						imm12=(imm7<<5)+imm5;
-//						if (imm12>>11==1) { //negative case
-//							 PC.pc=PC.pc+(0xFFFFF000 + imm12);
-//						 }
 						if (im1==1) { //negative case
-//							 PC.pc=PC.pc+(0xFFFFE000 + imm13);
 							PC.pc=PC.pc+(0xFFFFE000 + imm13);
 						 }
 						 else { //positive case
@@ -354,7 +344,6 @@ public class rv32I2 {
 			case 0x3:
 				switch(funct3) {
 				case 0x0: //LB -load byte
-//					if(imm12<0) { //negative offset
 					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 						if(memory[reg[res1]+imm12]<0) { //negative value in memory
@@ -377,7 +366,6 @@ public class rv32I2 {
 					
 					
 				case 0x1: //LH -load hexa
-//					if(imm12<0) { //negative offset
 					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
@@ -386,7 +374,6 @@ public class rv32I2 {
 				break;
 				
 				case 0x2: //LW -load word
-//					if(imm12<0) { //negative offset
 					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
@@ -398,7 +385,6 @@ public class rv32I2 {
 				break;
 				
 				case 0x4: //LBU -load byte unsigned
-//					if(imm12<0) { //negative offset
 					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
@@ -407,7 +393,6 @@ public class rv32I2 {
 				break;
 				
 				case 0x5: //LHU -load hexa unsigned 
-//					if(imm12<0) { //negative offset
 					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
@@ -424,7 +409,6 @@ public class rv32I2 {
 				switch(funct3) {
 				case 0x0: //SB -save byte
 					imm12=(imm7<<5)+imm5;
-//					if(imm12<0) { //negative offset
 					if(imm12>>>11==1) { //negative offset
 						imm12 = (imm12 + 0xFFFFF000);	
 					}
@@ -434,20 +418,16 @@ public class rv32I2 {
 				
 				case 0x1: //SH -save hexa
 					imm12=(imm7<<5)+imm5;
-//					if(imm12<0) { //negative offset
 					if(imm12>>>11==1) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);	
 					}
 					memory[reg[res1]+imm12]=(byte)(reg[res2] & 0xFF);
 					memory[reg[res1]+imm12+1]=(byte)((reg[res2] >> 8) & 0xFF);	
-//					System.out.println("+0: "+ memory[reg[res1]+imm12]);
-//					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
 				break;
 				
 				case 0x2: //SW -save word
 					imm12=(imm7<<5)+imm5;
 					if(imm12>>>11==1) { //negative offset
-//					if(imm12<0) { //negative offset
 						imm12=(imm12 + 0xFFFFF000);
 					}
 					memory[reg[res1]+imm12]=(byte)(reg[res2] & 0xFF);
@@ -468,12 +448,6 @@ public class rv32I2 {
 			case 0x73://ECALL
 				if(reg[10]==1) {//print int in a0(x10)
 					System.out.print(reg[11]);
-				}
-				else if(reg[10]==4){//print string in a0(x10)
-					System.out.print(reg[11]);
-				}
-				else if(reg[10]==9) {//allocates a1 bytes on the heap, returns pointer to start in a0
-
 				}
 				else if(reg[10]==10) {//exit program
 					PC.pc= progr.length*5;
