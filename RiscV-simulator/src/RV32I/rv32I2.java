@@ -5,9 +5,11 @@ import java.io.IOException;
 public class rv32I2 {
 	static byte [] memory = new byte [4000000];
 	static Boolean jumpe;
+	static String BinaryDumpFile ="";
 	static int reg[] = new int[32]; //Initializing register
 	static BinaryFileToHex binaryFile = new  BinaryFileToHex();
 	static ReadBinary readBin = new ReadBinary();
+	static BinaryDump BinDump = new BinaryDump();
 	public static int compareUnsigned(long x, long y) {
 		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
 		}
@@ -499,16 +501,16 @@ public class rv32I2 {
 			
 			if (PC.pc/4 >= progr.length) {
 				break;
-			}
-
-			for (int i = 0; i < reg.length; ++i) {
-				System.out.print(reg[i] + " ");
-			} 
-			System.out.println();
+			}		
 		}
-		
+		for (int i = 0; i < reg.length; ++i) {
+			System.out.print(reg[i] + " ");
+			BinaryDumpFile = BinaryDumpFile + (Long.toBinaryString( Integer.toUnsignedLong(reg[i]) | 0x100000000L ).substring(1) + System.lineSeparator());
+				
+		} 
+		System.out.println();
 		System.out.println("Program exit");
-
+		BinDump.saveDataInFile(BinaryDumpFile);
 	}
 
 
