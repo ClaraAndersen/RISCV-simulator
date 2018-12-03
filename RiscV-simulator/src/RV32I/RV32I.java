@@ -11,7 +11,6 @@ public class RV32I {
 	static ReadBinary readBin = new ReadBinary();
 	static BinaryDump BinDump = new BinaryDump();
 	
-	
 	public static int compareUnsigned(long x, long y) {
 		   return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
 		}
@@ -21,7 +20,6 @@ public class RV32I {
 
 	//The simulation
 	public static void main(String[] args) throws IOException {
-		
 		//Read program to instruction memory
 		int progr[] = readBin.intArray();
 		//initialzing program counter
@@ -413,7 +411,6 @@ public class RV32I {
 						imm12 = (imm12 + 0xFFFFF000);	
 					}
 					memory[(reg[res1]+imm12)]=(byte) (reg[res2] & 0xFF);
-					System.out.println(memory[reg[res1]+imm12]);
 				break;
 				
 				case 0x1: //SH -save hexa
@@ -435,10 +432,6 @@ public class RV32I {
 					memory[reg[res1]+imm12+2]=(byte)((reg[res2] >> 16) & 0xFF);	
 					memory[reg[res1]+imm12+3]=(byte)((reg[res2] >> 24) & 0xFF);	
 					
-					System.out.println("+0: "+ memory[reg[res1]+imm12]);
-					System.out.println("+1: "+ memory[reg[res1]+imm12+1]);
-					System.out.println("+2: "+ memory[reg[res1]+imm12+2]);
-					System.out.println("+3: "+ memory[reg[res1]+imm12+3]);
 				break;
 				
 				}	

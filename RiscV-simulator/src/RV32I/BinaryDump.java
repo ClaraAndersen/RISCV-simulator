@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class BinaryDump {
 	
-	private String filename = "./src/BinaryDump.txt";
+	private String filename = "./src/BinaryDumpTests/t14.txt";
 
 	public void saveDataInFile(String data) throws IOException {
 	    BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
